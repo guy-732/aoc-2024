@@ -6,8 +6,7 @@ fn parse(input: &str) -> Vec<Vec<i64>> {
         .lines()
         .filter(|line| !line.is_empty())
         .map(|line| {
-            line.trim()
-                .split_whitespace()
+            line.split_whitespace()
                 .map(|part| part.parse::<i64>().expect("Could not parse int"))
                 .collect_vec()
         })
@@ -34,7 +33,7 @@ fn is_safe_report(report: &[i64]) -> bool {
 fn part1(input: &[Vec<i64>]) -> usize {
     input
         .iter()
-        .filter(|&report| is_safe_report(&report))
+        .filter(|&report| is_safe_report(report))
         .count()
 }
 
@@ -77,7 +76,7 @@ fn is_safe_report_with_dampener(report: &[i64]) -> bool {
 fn part2(input: &[Vec<i64>]) -> usize {
     input
         .iter()
-        .filter(|&report| is_safe_report_with_dampener(&report))
+        .filter(|&report| is_safe_report_with_dampener(report))
         .count()
 }
 
