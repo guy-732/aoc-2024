@@ -103,7 +103,7 @@ fn perform_walk(map: &MappedArea) -> (FnvHashSet<Position>, bool) {
                 }
 
                 current_position = new_pos;
-                let directions = walked.entry(new_pos).or_insert_with(|| vec![]);
+                let directions = walked.entry(new_pos).or_insert_with(Vec::new);
                 if directions.contains(&guard_direction) {
                     // looping
                     break true;
@@ -120,7 +120,7 @@ fn perform_walk(map: &MappedArea) -> (FnvHashSet<Position>, bool) {
 #[aoc(day06, part1)]
 fn part1(input: &MappedArea) -> usize {
     let (walked, looping) = perform_walk(input);
-    assert_eq!(looping, false);
+    assert!(!looping);
     walked.len()
 }
 
@@ -128,7 +128,7 @@ fn part1(input: &MappedArea) -> usize {
 fn part2(input: &MappedArea) -> usize {
     let walked = {
         let (mut walked, looping) = perform_walk(input);
-        assert_eq!(looping, false);
+        assert!(!looping);
         walked.remove(&input.guard_start_pos);
         walked
     };
