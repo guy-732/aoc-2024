@@ -100,7 +100,7 @@ fn part1_equation_valid_impl(
     equation: &Equation,
 ) -> bool {
     if operator_offset >= operators.len() {
-        check_with_operators(&operators, equation)
+        check_with_operators(operators, equation)
     } else {
         loop {
             if part1_equation_valid_impl(operators, operator_offset + 1, equation) {
@@ -121,9 +121,9 @@ fn part1_equation_valid_impl(
 fn part1_equation_valid(equation: &Equation) -> bool {
     let mut operators = vec![Operator::Add; equation.terms.len() - 1];
 
-    let res = part1_equation_valid_impl(&mut operators, 0, equation);
+    
     // println!("{equation:?}: {res}");
-    res
+    part1_equation_valid_impl(&mut operators, 0, equation)
 }
 
 fn part2_equation_valid_impl(
@@ -132,7 +132,7 @@ fn part2_equation_valid_impl(
     equation: &Equation,
 ) -> bool {
     if operator_offset >= operators.len() {
-        check_with_operators(&operators, equation)
+        check_with_operators(operators, equation)
     } else {
         loop {
             if part2_equation_valid_impl(operators, operator_offset + 1, equation) {
@@ -153,9 +153,9 @@ fn part2_equation_valid_impl(
 fn part2_equation_valid(equation: &Equation) -> bool {
     let mut operators = vec![Operator::Add; equation.terms.len() - 1];
 
-    let res = part2_equation_valid_impl(&mut operators, 0, equation);
+    
     // println!("{equation:?}: {res}");
-    res
+    part2_equation_valid_impl(&mut operators, 0, equation)
 }
 
 #[aoc(day07, part1)]
