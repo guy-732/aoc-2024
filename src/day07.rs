@@ -15,9 +15,7 @@ impl Operator {
         match self {
             Self::Add => lhs + rhs,
             Self::Mul => lhs * rhs,
-            Self::Concatenate => format!("{lhs}{rhs}")
-                .parse()
-                .expect("Could not parse concatenation"),
+            Self::Concatenate => lhs * 10_u64.pow(((rhs + 1) as f64).log10().ceil() as u32) + rhs,
         }
     }
 
@@ -121,7 +119,6 @@ fn part1_equation_valid_impl(
 fn part1_equation_valid(equation: &Equation) -> bool {
     let mut operators = vec![Operator::Add; equation.terms.len() - 1];
 
-    
     // println!("{equation:?}: {res}");
     part1_equation_valid_impl(&mut operators, 0, equation)
 }
@@ -153,7 +150,6 @@ fn part2_equation_valid_impl(
 fn part2_equation_valid(equation: &Equation) -> bool {
     let mut operators = vec![Operator::Add; equation.terms.len() - 1];
 
-    
     // println!("{equation:?}: {res}");
     part2_equation_valid_impl(&mut operators, 0, equation)
 }
