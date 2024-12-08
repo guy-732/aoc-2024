@@ -59,15 +59,12 @@ fn part1_do_freq(
     for (&a, &b) in antenna_positions.iter().tuple_combinations() {
         let (node1, node2) = calculate_antinode_positions(a, b);
 
-        let node1 = map.is_position_within(node1).then_some(node1);
-        let node2 = map.is_position_within(node2).then_some(node2);
-
-        if let Some(node) = node1 {
-            antinodes.insert(node);
+        if map.is_position_within(node1) {
+            antinodes.insert(node1);
         }
 
-        if let Some(node) = node2 {
-            antinodes.insert(node);
+        if map.is_position_within(node2) {
+            antinodes.insert(node2);
         }
     }
 }
