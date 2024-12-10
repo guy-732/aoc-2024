@@ -101,7 +101,7 @@ impl std::fmt::Display for Height {
 
 impl From<u8> for Height {
     fn from(value: u8) -> Self {
-        if !matches!(value, b'0'..=b'9') {
+        if !value.is_ascii_digit() {
             return Self::Invalid;
         }
 
