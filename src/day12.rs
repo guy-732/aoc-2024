@@ -305,12 +305,10 @@ struct Side {
 
 impl Side {
     fn try_merge(&mut self, other: Side) -> Option<Side> {
-        if self.fence_side == other.fence_side && self.alignment == other.alignment {
-            if self.start_can_merge_with(&other) || self.end_can_merge_with(&other) {
-                self.bounds.0 = self.bounds.0.min(other.bounds.0);
-                self.bounds.1 = self.bounds.1.max(other.bounds.1);
-                return None;
-            }
+        if self.fence_side == other.fence_side && self.alignment == other.alignment && (self.start_can_merge_with(&other) || self.end_can_merge_with(&other)) {
+            self.bounds.0 = self.bounds.0.min(other.bounds.0);
+            self.bounds.1 = self.bounds.1.max(other.bounds.1);
+            return None;
         }
 
         Some(other)
