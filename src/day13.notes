@@ -1,0 +1,12 @@
+A -- Button A
+B -- Button B
+T -- Target
+
+Tx = a * Ax + b * Bx
+Ty = a * Ay + b * By
+
+Solve for (a, b)
++-     -+  +- -+     +-  -+
+| Ax Bx |  | a |     | Tx |
+| Ay By |  | b |  =  | Ty |
++-     -+  +- -+     +-  -+
