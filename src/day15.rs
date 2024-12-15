@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::{collections::VecDeque, fmt::Write};
 
 use fnv::FnvHashMap;
 
@@ -62,6 +62,15 @@ enum Move {
 }
 
 impl Move {
+    fn inverse(self) -> Self {
+        match self {
+            Self::Down => Self::Up,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+            Self::Up => Self::Down,
+        }
+    }
+
     fn move_from_position(&self, position: Position) -> Position {
         match self {
             Self::Up => Position(position.0 - 1, position.1),
@@ -164,9 +173,44 @@ impl Map {
         block_pos: Position,
         moves_to_execute: &mut FnvHashMap<Position, Tile>,
     ) -> bool {
-        let target_pos = mv.move_from_position(block_pos);
+        let mv_inv = mv.inverse();
+        let mut block_positions = VecDeque::from([block_pos]);
+        while let Some(block_pos) = block_positions.pop_front() {
+            let prev_block = mv_inv.move_from_position(block_pos);
+            let tile_to_replace_with = if moves_to_execute.contains_key(&prev_block) {
+                self[prev_block]
+            } else {
+                Tile::FreeSpace
+            };
 
-        todo!()
+            moves_to_execute.insert(block_pos, tile_to_replace_with);
+
+            let neighbor = match self[block_pos] {
+                Tile::BoxLeft => Move::Right.move_from_position(block_pos),
+                Tile::BoxRight => Move::Left.move_from_position(block_pos),
+                other => panic!("Part 2 got tile '{other}' in queue"),
+            };
+
+            if !moves_to_execute.contains_key(&neighbor) && !block_positions.contains(&neighbor) {
+                block_positions.push_back(neighbor);
+            }
+
+            let next_block = mv.move_from_position(block_pos);
+            match self[next_block] {
+                Tile::Wall => return false,
+                Tile::BoxLeft | Tile::BoxRight => {
+                    if !block_positions.contains(&next_block) {
+                        block_positions.push_back(next_block);
+                    }
+                }
+                Tile::FreeSpace => {
+                    moves_to_execute.insert(next_block, self[block_pos]);
+                }
+                other => panic!("Tile '{other}' encountered in part 2"),
+            }
+        }
+
+        true
     }
 
     fn push_part2_horizontal(&mut self, mv: Move, block_pos: Position) -> bool {
@@ -398,7 +442,7 @@ fn part2(input: &str) -> u64 {
         map.perform_move_part2(mv);
     }
 
-    println!("{}", &map);
+    // println!("{}", &map);
     map.sum_box_gps()
 }
 
