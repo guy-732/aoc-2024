@@ -137,12 +137,10 @@ fn part1_in_dim(robots: &[Robot], dimension: Position) -> u64 {
             } else {
                 quadrants[2] += 1;
             }
+        } else if robot_pos.1 < vertical_middle {
+            quadrants[1] += 1;
         } else {
-            if robot_pos.1 < vertical_middle {
-                quadrants[1] += 1;
-            } else {
-                quadrants[3] += 1;
-            }
+            quadrants[3] += 1;
         }
     }
 
