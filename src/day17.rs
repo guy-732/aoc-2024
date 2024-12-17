@@ -133,7 +133,7 @@ fn execute(instructions: &[Instruction], mut registers: (u64, u64, u64)) -> Vec<
     while let Some(&instr) = instructions.get(instr_ptr) {
         match instr {
             Instruction::Adv => {
-                registers.0 /= 1 << combo_op(&registers, instructions[instr_ptr + 1]);
+                registers.0 >>= combo_op(&registers, instructions[instr_ptr + 1]);
                 instr_ptr += 2;
             }
             Instruction::Bxl => {
@@ -160,13 +160,11 @@ fn execute(instructions: &[Instruction], mut registers: (u64, u64, u64)) -> Vec<
                 instr_ptr += 2;
             }
             Instruction::Bdv => {
-                registers.1 =
-                    registers.0 / (1 << combo_op(&registers, instructions[instr_ptr + 1]));
+                registers.1 = registers.0 >> combo_op(&registers, instructions[instr_ptr + 1]);
                 instr_ptr += 2;
             }
             Instruction::Cdv => {
-                registers.2 =
-                    registers.0 / (1 << combo_op(&registers, instructions[instr_ptr + 1]));
+                registers.2 = registers.0 >> combo_op(&registers, instructions[instr_ptr + 1]);
                 instr_ptr += 2;
             }
         }
@@ -175,11 +173,15 @@ fn execute(instructions: &[Instruction], mut registers: (u64, u64, u64)) -> Vec<
     result
 }
 
+fn part2(input: &(Vec<Instruction>, (u64, u64, u64))) -> u64 {
+    todo!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const EXAMPLE: &str = "Register A: 729
+    const PART1_EXAMPLE: &str = "Register A: 729
 Register B: 0
 Register C: 0
 
@@ -187,6 +189,17 @@ Program: 0,1,5,4,3,0";
 
     #[test]
     fn part1_example() {
-        assert_eq!(part1(&parse(EXAMPLE)), "4,6,3,5,6,3,5,2,1,0");
+        assert_eq!(part1(&parse(PART1_EXAMPLE)), "4,6,3,5,6,3,5,2,1,0");
+    }
+
+    const PART2_EXAMPLE: &str = "Register A: 2024
+Register B: 0
+Register C: 0
+
+Program: 0,3,5,4,3,0";
+
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(PART1_EXAMPLE)), 117440);
     }
 }
