@@ -173,7 +173,8 @@ fn execute(instructions: &[Instruction], mut registers: (u64, u64, u64)) -> Vec<
     result
 }
 
-fn part2(input: &(Vec<Instruction>, (u64, u64, u64))) -> u64 {
+#[aoc(day17, part2)]
+fn part2(_input: &(Vec<Instruction>, (u64, u64, u64))) -> u64 {
     todo!()
 }
 
@@ -200,6 +201,6 @@ Program: 0,3,5,4,3,0";
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse(PART1_EXAMPLE)), 117440);
+        assert_eq!(part2(&parse(PART2_EXAMPLE)), 117440);
     }
 }
