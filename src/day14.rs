@@ -1,6 +1,6 @@
 use std::{error::Error, str::FromStr};
 
-// use fnv::FnvHashSet;
+use fnv::FnvHashSet;
 use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -107,10 +107,10 @@ impl Robot {
         robot_position
     }
 
-    // fn move_next_second(&mut self, dimension: Position) {
-    // self.position += self.speed;
-    // self.position.wrap(dimension);
-    // }
+    fn move_next_second(&mut self, dimension: Position) {
+        self.position += self.speed;
+        self.position.wrap(dimension);
+    }
 }
 
 #[aoc_generator(day14)]
@@ -152,59 +152,59 @@ fn part1(robots: &[Robot]) -> u64 {
     part1_in_dim(robots, Position(101, 103))
 }
 
-// const MAX_FRAME: u64 = 11_000;
-// const CONTINUOUS_LENGTH: i32 = 10;
-// fn do_part2(robots: &[Robot], dimension: Position) -> (Box<[Robot]>, u64) {
-// let mut robots = robots.to_owned().into_boxed_slice();
-// let mut positions = FnvHashSet::default();
-// for frame in 1..=MAX_FRAME {
-// positions.clear();
-// for robot in robots.iter_mut() {
-// robot.move_next_second(dimension);
-// positions.insert(robot.position);
-// }
-//
-// for line in 0..dimension.0 {
-// let mut continuous_count = 0;
-// for col in 0..dimension.1 {
-// if positions.contains(&Position(line, col)) {
-// continuous_count += 1;
-// if continuous_count >= CONTINUOUS_LENGTH {
-// return (robots, frame);
-// }
-// } else {
-// continuous_count = 0;
-// }
-// }
-// }
-// }
-//
-// unreachable!("After {MAX_FRAME} frames, still haven't found anything");
-// }
+const MAX_FRAME: u64 = 11_000;
+const CONTINUOUS_LENGTH: i32 = 10;
+fn do_part2(robots: &[Robot], dimension: Position) -> (Box<[Robot]>, u64) {
+    let mut robots = robots.to_owned().into_boxed_slice();
+    let mut positions = FnvHashSet::default();
+    for frame in 1..=MAX_FRAME {
+        positions.clear();
+        for robot in robots.iter_mut() {
+            robot.move_next_second(dimension);
+            positions.insert(robot.position);
+        }
 
-// #[aoc(day14, part2)]
-// fn part2(robots: &[Robot]) -> String {
-// let (robots, frame) = do_part2(robots, Position(101, 103));
-// let mut answer = format!("Frame {frame}:\n");
-// let positions = robots
-// .iter()
-// .map(|robot| robot.position)
-// .collect::<FnvHashSet<Position>>();
-//
-// for line in 0..103 {
-// for col in 0..101 {
-// if positions.contains(&Position(col, line)) {
-// answer.push('#');
-// } else {
-// answer.push(' ');
-// }
-// }
-//
-// answer.push('\n');
-// }
-//
-// answer
-// }
+        for line in 0..dimension.0 {
+            let mut continuous_count = 0;
+            for col in 0..dimension.1 {
+                if positions.contains(&Position(line, col)) {
+                    continuous_count += 1;
+                    if continuous_count >= CONTINUOUS_LENGTH {
+                        return (robots, frame);
+                    }
+                } else {
+                    continuous_count = 0;
+                }
+            }
+        }
+    }
+
+    unreachable!("After {MAX_FRAME} frames, still haven't found anything");
+}
+
+#[aoc(day14, part2)]
+fn part2(robots: &[Robot]) -> String {
+    let (robots, frame) = do_part2(robots, Position(101, 103));
+    let mut answer = format!("Frame {frame}:\n");
+    let positions = robots
+        .iter()
+        .map(|robot| robot.position)
+        .collect::<FnvHashSet<Position>>();
+
+    for line in 0..103 {
+        for col in 0..101 {
+            if positions.contains(&Position(col, line)) {
+                answer.push('#');
+            } else {
+                answer.push(' ');
+            }
+        }
+
+        answer.push('\n');
+    }
+
+    answer
+}
 
 #[cfg(test)]
 mod tests {
