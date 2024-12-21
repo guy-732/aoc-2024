@@ -12,6 +12,26 @@ const DIRECT_NEIGHBORS: [Position; 4] = [
     Position(0, -1),
 ];
 
+impl Position {
+    fn manhattan_distance(&self, other: &Self) -> u64 {
+        (self.0.abs_diff(other.0) + self.1.abs_diff(other.1)) as u64
+    }
+
+    fn iter_positions_within(
+        &self,
+        max_distance: usize,
+    ) -> impl IntoIterator<Item = (Position, u64)> + '_ {
+        let max_isize = max_distance as isize;
+        ((self.0 - max_isize)..=(self.0 + max_isize))
+            .flat_map(move |x_dist| {
+                ((self.1 - max_isize)..=(self.1 + max_isize))
+                    .map(move |y_dist| Position(x_dist, y_dist))
+            })
+            .map(|position| (position, self.manhattan_distance(&position)))
+            .filter(move |(_, dist)| (*dist as usize) <= max_distance)
+    }
+}
+
 impl std::fmt::Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.0, self.1)
@@ -166,6 +186,52 @@ where
     accepted_cheats
 }
 
+fn find_cheats_part2<F>(
+    accept_cheat: &mut F,
+    cheat_duration: usize,
+    from: Position,
+    from_cost: u64,
+    costs: &FnvHashMap<Position, u64>,
+) -> u64
+where
+    F: FnMut(u64) -> bool,
+{
+    let mut accepted = 0;
+    for (end, covered) in from.iter_positions_within(cheat_duration) {
+        if let Some(end_cost) = costs.get(&end) {
+            if *end_cost > from_cost {
+                continue;
+            }
+
+            let saved = from_cost.saturating_sub(*end_cost + covered);
+            if accept_cheat(saved) {
+                accepted += 1;
+            }
+        }
+    }
+
+    accepted
+}
+
+fn count_cheats_part2<F>(grid: &Grid, mut accept_cheat: F, cheat_duration: usize) -> u64
+where
+    F: FnMut(u64) -> bool,
+{
+    let normal_costs = grid.costs_to_end();
+    let mut accepted_cheats = 0;
+    for (&start_cheat_at, &cost_from_start) in normal_costs.iter() {
+        accepted_cheats += find_cheats_part2(
+            &mut accept_cheat,
+            cheat_duration,
+            start_cheat_at,
+            cost_from_start,
+            &normal_costs,
+        );
+    }
+
+    accepted_cheats
+}
+
 #[aoc_generator(day20)]
 fn parse(input: &str) -> Grid {
     let mut start_pos = None;
@@ -204,6 +270,11 @@ fn part1(grid: &Grid) -> u64 {
     count_cheats_part1(grid, |picoseconds_saved| picoseconds_saved >= 100)
 }
 
+#[aoc(day20, part2)]
+fn part2(grid: &Grid) -> u64 {
+    count_cheats_part2(grid, |picoseconds_saved| picoseconds_saved >= 100, 20)
+}
+
 #[cfg(test)]
 mod tests {
     use fnv::FnvHashMap;
@@ -226,7 +297,7 @@ mod tests {
 #...#...#...###
 ###############";
 
-    const EXAMPLE_CHEATS: [(u64, u64); 11] = [
+    const EXAMPLE1_CHEATS: [(u64, u64); 11] = [
         (2, 14),
         (4, 14),
         (6, 2),
@@ -243,7 +314,7 @@ mod tests {
     #[test]
     fn part1_example() {
         let grid = parse(EXAMPLE);
-        let expected_cheats: FnvHashMap<u64, u64> = EXAMPLE_CHEATS.into_iter().collect();
+        let expected_cheats: FnvHashMap<u64, u64> = EXAMPLE1_CHEATS.into_iter().collect();
         let mut cheats_found = FnvHashMap::default();
 
         assert_eq!(
@@ -258,6 +329,48 @@ mod tests {
             expected_cheats.values().copied().sum()
         );
 
-        assert_eq!(expected_cheats, cheats_found);
+        assert_eq!(cheats_found, expected_cheats);
+    }
+
+    const EXAMPLE2_CHEATS: [(u64, u64); 14] = [
+        (50, 32),
+        (52, 31),
+        (54, 29),
+        (56, 39),
+        (58, 25),
+        (60, 23),
+        (62, 20),
+        (64, 19),
+        (66, 12),
+        (68, 14),
+        (70, 12),
+        (72, 22),
+        (74, 4),
+        (76, 3),
+    ];
+
+    #[test]
+    fn part2_example() {
+        let grid = parse(EXAMPLE);
+        let expected_cheats: FnvHashMap<u64, u64> = EXAMPLE2_CHEATS.into_iter().collect();
+        let mut cheats_found = FnvHashMap::default();
+
+        assert_eq!(
+            count_cheats_part2(
+                &grid,
+                |saved| {
+                    if saved < 50 {
+                        return false;
+                    }
+
+                    *cheats_found.entry(saved).or_insert(0) += 1;
+                    true
+                },
+                20,
+            ),
+            expected_cheats.values().copied().sum()
+        );
+
+        assert_eq!(cheats_found, expected_cheats);
     }
 }
