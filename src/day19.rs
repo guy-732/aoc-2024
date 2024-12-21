@@ -84,7 +84,7 @@ fn part2_check_pattern_rec(
     }
 
     cache[matched] = current_sum;
-    return current_sum;
+    current_sum
 }
 
 fn part2_check_pattern(design: &[u8], patterns: &[&[u8]]) -> u64 {
