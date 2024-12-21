@@ -167,7 +167,6 @@ mod a_star {
     use std::{
         cmp::Reverse,
         collections::{BinaryHeap, VecDeque},
-        usize,
     };
 
     use super::*;
@@ -260,7 +259,7 @@ mod a_star {
                     return Some(trace_route(&nodes, target_pos));
                 }
 
-                let mut node_clone = nodes[neighbour.into_usize_tuple()].clone();
+                let mut node_clone = nodes[neighbour.into_usize_tuple()];
                 node_clone.g = nodes[position.into_usize_tuple()].g + 1;
                 if nodes[neighbour.into_usize_tuple()].f() <= node_clone.f() {
                     continue;
