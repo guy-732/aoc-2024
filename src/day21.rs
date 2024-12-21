@@ -1,3 +1,5 @@
+use fnv::FnvHashMap;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Position(isize, isize);
 
@@ -53,6 +55,7 @@ impl std::ops::MulAssign<isize> for Position {
 struct RobotRemote {
     current_position: Position,
     controlling_remote: Option<Box<RobotRemote>>,
+    cache: FnvHashMap<(Position, Position, [u8; 4]), (u64, Position)>,
 }
 
 impl RobotRemote {
@@ -62,6 +65,7 @@ impl RobotRemote {
         Self {
             current_position: position,
             controlling_remote: None,
+            cache: FnvHashMap::default(),
         }
     }
 
@@ -112,8 +116,19 @@ impl RobotRemote {
         }
 
         if let Some(ref mut remote) = self.controlling_remote {
+            let remote_pos = remote.current_position;
             let order_of_presses =
                 order_of_presses(self.current_position, target_position, gap_position);
+
+            if let Some((cost, new_remote_pos)) =
+                remote.cache.get(&(delta, remote_pos, order_of_presses))
+            {
+                // println!("Cache hit at depth {depth}!!");
+                self.current_position = target_position;
+                remote.current_position = *new_remote_pos;
+                return *cost;
+            }
+
             let mut presses = 0;
             for button in order_of_presses {
                 let presses_in_direction = presses_in_direction(delta, button);
@@ -126,6 +141,11 @@ impl RobotRemote {
                     presses += remote.press(presses_in_direction, depth + 1, button);
                 }
             }
+
+            remote.cache.insert(
+                (delta, remote_pos, order_of_presses),
+                (presses, remote.current_position),
+            );
 
             self.current_position = target_position;
             presses
@@ -157,7 +177,7 @@ fn order_of_presses(from: Position, to: Position, gap: Position) -> [u8; 4] {
     } else if from.1 == gap.1 && to.0 == gap.0 {
         [b'<', b'>', b'v', b'^']
     } else {
-        [b'<', b'v', b'>', b'^']
+        [b'<', b'v', b'^', b'>']
     }
 }
 
@@ -208,12 +228,19 @@ impl DoorKeypad {
 
     fn build_part1() -> Self {
         let mut res = Self {
-            controlling_remote: RobotRemote::from_initial_position(DoorKeypad::position_of_key(
-                b'A',
-            )),
+            controlling_remote: RobotRemote::from_initial_position(Self::position_of_key(b'A')),
         };
 
         res.controlling_remote.add_controller_depth(2);
+        res
+    }
+
+    fn build_part2() -> Self {
+        let mut res = Self {
+            controlling_remote: RobotRemote::from_initial_position(Self::position_of_key(b'A')),
+        };
+
+        res.controlling_remote.add_controller_depth(25);
         res
     }
 
@@ -273,6 +300,20 @@ fn part1(input: &str) -> u64 {
         .map(|line| line.trim())
         .map(|sequence| {
             // print!("Sequence {sequence}: ");
+            keypad.count_button_presses_on_top_level(sequence.as_bytes())
+                * sequence_number(sequence)
+        })
+        .sum()
+}
+
+#[aoc(day21, part2)]
+fn part2(input: &str) -> u64 {
+    let mut keypad = DoorKeypad::build_part2();
+    input
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(|line| line.trim())
+        .map(|sequence| {
             keypad.count_button_presses_on_top_level(sequence.as_bytes())
                 * sequence_number(sequence)
         })
