@@ -174,8 +174,98 @@ fn execute(instructions: &[Instruction], mut registers: (u64, u64, u64)) -> Vec<
 }
 
 #[aoc(day17, part2)]
-fn part2(_input: &(Vec<Instruction>, (u64, u64, u64))) -> u64 {
-    todo!()
+fn part2(input: &(Vec<Instruction>, (u64, u64, u64))) -> u64 {
+    part2_logic(&input.0, (0, input.1 .1, input.1 .2), 0)
+}
+
+fn part2_logic(instructions: &[Instruction], registers: (u64, u64, u64), on_instr: usize) -> u64 {
+    let mut min_found = u64::MAX;
+    for i in 0..=7 {
+        let reg_a = registers.0 | (i << (3 * on_instr));
+        let registers = (reg_a, registers.1, registers.2);
+        if on_instr >= 3 && on_instr < instructions.len() {
+            if (reg_a >> (3 * 3)) != 0
+                && !first_n_instructions_correct(instructions, registers, on_instr - 3)
+            {
+                continue;
+            }
+        } else if on_instr == instructions.len() {
+            if !first_n_instructions_correct(instructions, registers, instructions.len()) {
+                continue;
+            }
+
+            return reg_a;
+        }
+
+        let reg_a = part2_logic(instructions, registers, on_instr + 1);
+        if reg_a < min_found {
+            min_found = reg_a;
+        }
+    }
+
+    min_found
+}
+
+fn first_n_instructions_correct(
+    instructions: &[Instruction],
+    mut registers: (u64, u64, u64),
+    to_check: usize,
+) -> bool {
+    let mut current = 0;
+    let mut instr_ptr = 0;
+
+    while let Some(&instr) = instructions.get(instr_ptr) {
+        match instr {
+            Instruction::Adv => {
+                registers.0 >>= combo_op(&registers, instructions[instr_ptr + 1]);
+                instr_ptr += 2;
+            }
+            Instruction::Bxl => {
+                registers.1 ^= u64::from(instructions[instr_ptr + 1]);
+                instr_ptr += 2;
+            }
+            Instruction::Bst => {
+                registers.1 = combo_op(&registers, instructions[instr_ptr + 1]) & 0b111;
+                instr_ptr += 2;
+            }
+            Instruction::Jnz => {
+                if registers.0 == 0 {
+                    instr_ptr += 2;
+                } else {
+                    instr_ptr = u64::from(instructions[instr_ptr + 1]) as usize;
+                }
+            }
+            Instruction::Bxc => {
+                registers.1 ^= registers.2;
+                instr_ptr += 2;
+            }
+            Instruction::Out => {
+                // result.push((combo_op(&registers, instructions[instr_ptr + 1]) & 0b111) as u8);
+                let num = (combo_op(&registers, instructions[instr_ptr + 1]) & 0b111) as u8;
+                if num != instructions[current].into() {
+                    return false;
+                }
+
+                current += 1;
+                if current >= to_check {
+                    return true;
+                }
+
+                instr_ptr += 2;
+            }
+            Instruction::Bdv => {
+                registers.1 = registers.0 >> combo_op(&registers, instructions[instr_ptr + 1]);
+                instr_ptr += 2;
+            }
+            Instruction::Cdv => {
+                registers.2 = registers.0 >> combo_op(&registers, instructions[instr_ptr + 1]);
+                instr_ptr += 2;
+            }
+        }
+    }
+
+    // not enough outputs...
+    false
 }
 
 #[cfg(test)]
