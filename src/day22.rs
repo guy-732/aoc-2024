@@ -4,6 +4,7 @@ use std::{
 };
 
 use itertools::Itertools;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 #[aoc_generator(day22)]
 fn parse(input: &str) -> Vec<u64> {
@@ -77,7 +78,7 @@ fn find_best_sequence(price_with_deltas: &[Vec<(u8, i8)>]) -> u64 {
         sequence = next_seq;
 
         let profit = price_with_deltas
-            .iter()
+            .par_iter()
             .map(|prices| first_matching_sequence(prices, sequence))
             .sum();
 
