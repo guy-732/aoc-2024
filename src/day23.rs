@@ -60,11 +60,12 @@ impl<'s> Graph<'s> {
         excluded: &mut FnvHashSet<&'s str>,
         max_clique_found: &mut FnvHashSet<&'s str>,
     ) {
-        if potential.is_empty() && excluded.is_empty() {
-            if max_clique_found.len() < current_clique.len() {
-                max_clique_found.clone_from(current_clique);
-                return;
-            }
+        if potential.is_empty()
+            && excluded.is_empty()
+            && max_clique_found.len() < current_clique.len()
+        {
+            max_clique_found.clone_from(current_clique);
+            return;
         }
 
         while let Some(&v) = potential.iter().next() {
@@ -127,11 +128,14 @@ impl std::fmt::Display for Graph<'_> {
     }
 }
 
-fn in_sorted_order<T: Ord + Clone>(a: T, b: T, c: T) -> (T, T, T) {
-    let mut sorted = vec![a, b, c];
+fn in_sorted_order<T: Ord>(a: T, b: T, c: T) -> (T, T, T) {
+    let mut sorted = [a, b, c];
     sorted.sort_unstable();
 
-    (sorted[0].clone(), sorted[1].clone(), sorted[2].clone())
+    sorted
+        .into_iter()
+        .collect_tuple()
+        .expect("3 element array not collected to 3 element tuple")
 }
 
 fn parse(input: &str) -> Graph<'_> {
